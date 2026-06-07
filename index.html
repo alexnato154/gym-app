@@ -319,26 +319,66 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;height:3px;backgroun
 <script>
 // ── Default sessions ──────────────────────────────────────
 const DEFAULT_SESSIONS = [
-  {id:'upper',type:'Upper',name:'Tren superior',focus:'Pecho · hombro · espalda · brazos',exercises:[
-    {name:'Press inclinado (máquina)',series:4,reps:'10',rpe:7,tags:['Pecho'],tech:'Ajusta el asiento para que los agarres queden por encima del pecho. Empuja controlando la subida y baja lentamente.',sport:'Fuerza de empuje. Estabilidad de hombro.'},
-    {name:'Press tumbado (máquina)',series:4,reps:'10',rpe:7,tags:['Pecho'],tech:'Agarre a la anchura de hombros. Pecho arriba. Baja hasta sentir estiramiento.',sport:'Empuje horizontal. Potencia de brazo.'},
-    {name:'Press hombro (máquina)',series:3,reps:'10',rpe:7,tags:['Hombro'],tech:'Asiento erguido, espalda apoyada. Empuja verticalmente sin arquear la zona lumbar.',sport:'Fuerza de empuje vertical.'},
-    {name:'Jalón al pecho (polea)',series:4,reps:'10',rpe:7,tags:['Espalda'],tech:'Agarre prono. Pecho arriba, lleva los codos hacia las caderas.',sport:'Fuerza de tracción. Equilibrio muscular.'},
-    {name:'Elevación lateral (polea)',series:3,reps:'12',rpe:7,tags:['Hombro'],tech:'Un brazo cada vez. Polea baja. Sube hasta la altura del hombro sin impulso.',sport:'Deltoides lateral. Estabilidad del hombro.'},
-    {name:'Tríceps (máquina)',series:3,reps:'12',rpe:7,tags:['Tríceps'],tech:'Codos fijos. Extiende completamente y aprieta en la contracción máxima.',sport:'Fuerza auxiliar de brazo.'},
-    {name:'Bíceps (máquina)',series:3,reps:'12',rpe:7,tags:['Bíceps'],tech:'Rango completo: extiende abajo, flexiona hasta el máximo. Sin balanceo.',sport:'Aislamiento de bíceps. Fuerza de agarre.'}
+  {id:'upperA',type:'Upper A',name:'Tren superior — Horizontal',focus:'Espalda horizontal · Pecho · Hombro · Tríceps',exercises:[
+    {name:'Bicicleta o caminata',series:1,reps:'5 min',rpe:null,tags:['Calentamiento'],tech:'Ritmo suave. Activa la circulación antes de cargar.',sport:''},
+    {name:'Chin tucks',series:1,reps:'10',rpe:null,tags:['Calentamiento','Cervical'],tech:'Movilidad cervical. Mentón hacia dentro, cabeza atrás horizontal.',sport:''},
+    {name:'Rotación torácica',series:1,reps:'10 c/lado',rpe:null,tags:['Calentamiento'],tech:'Solo tronco, cuello relajado. Sentado o a cuatro patas.',sport:''},
+    {name:'Apertura de pecho',series:1,reps:'30s c/lado',rpe:null,tags:['Calentamiento'],tech:'Marco de puerta, brazos en L. Abre el pecho sin forzar el cuello.',sport:''},
+    {name:'Remo máquina',series:3,reps:'10',rpe:7,tags:['Espalda'],tech:'Unilateral, agarre neutro. Tira con el codo, no con el cuello. SEÑAL DE PARADA: para inmediatamente si hay dolor real en el cuello, mareo o náuseas.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Press tumbado máquina',series:3,reps:'8',rpe:7,tags:['Pecho'],tech:'Cuello relajado en todo momento. No encojas los trapecios. SEÑAL DE PARADA: para si hay dolor real en el cuello, mareo o presión en la cabeza.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Press inclinado neutro',series:3,reps:'8',rpe:7,tags:['Pecho'],tech:'Agarre neutro, exhala al empujar. Mantén los trapecios bajos.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Elevación lateral',series:3,reps:'10',rpe:7,tags:['Hombro'],tech:'Peso fijo, no subas entre series. Codo ligeramente flexionado, sube hasta la altura del hombro.',sport:'Accesorios: añade reps antes de subir peso.'},
+    {name:'Tríceps máquina',series:3,reps:'10',rpe:7,tags:['Tríceps'],tech:'Controlado. Codos fijos, extiende completamente.',sport:'Accesorios: añade reps antes de subir peso.'}
   ]},
-  {id:'lower',type:'Lower',name:'Tren inferior',focus:'Cuádriceps · isquios · glúteo · core',exercises:[
-    {name:'Press de pierna',series:4,reps:'10',rpe:7,tags:['Cuádriceps','Glúteo'],tech:'Pies a anchura de hombros. Baja hasta 90° de rodilla. Empuja sin bloquear.',sport:'Fuerza de pierna. Base para desplazamientos.'},
-    {name:'Extensión de pierna (máquina)',series:3,reps:'12',rpe:7,tags:['Cuádriceps'],tech:'Ajusta el eje a la rodilla. Extiende completamente y baja lento.',sport:'Aislamiento de cuádriceps. Protección de rodilla.'},
-    {name:'Curl sentado (máquina)',series:3,reps:'12',rpe:7,tags:['Isquios'],tech:'Control total en ambas fases. La fase negativa es igual de importante.',sport:'Equilibrio quad/isquio. Prevención de lesiones.'},
-    {name:'Aductor (máquina)',series:3,reps:'15',rpe:6,tags:['Aductor'],tech:'Rango completo sin rebotar. Cierra lento y abre controlado.',sport:'Estabilidad de cadera. Cambios de dirección.'},
-    {name:'Gemelo caballito (máquina)',series:4,reps:'15',rpe:7,tags:['Gemelo'],tech:'Rango completo: baja hasta estiramiento, sube apretando el gemelo.',sport:'Propulsión y reactividad.'},
-    {name:'Abdominales (máquina)',series:3,reps:'15',rpe:7,tags:['Core'],tech:'Flexiona la columna, no solo bajes los codos. Controla la vuelta.',sport:'Core estabilizador.'}
+  {id:'lower',type:'Lower',name:'Tren inferior',focus:'Cuádriceps · Isquios · Glúteo · Core',exercises:[
+    {name:'Bicicleta o caminata',series:1,reps:'5 min',rpe:null,tags:['Calentamiento'],tech:'Ritmo suave.',sport:''},
+    {name:'Chin tucks',series:1,reps:'10',rpe:null,tags:['Calentamiento','Cervical'],tech:'Movilidad cervical.',sport:''},
+    {name:'Rotación torácica',series:1,reps:'10 c/lado',rpe:null,tags:['Calentamiento'],tech:'Solo tronco, cuello relajado.',sport:''},
+    {name:'Apertura de pecho',series:1,reps:'30s c/lado',rpe:null,tags:['Calentamiento'],tech:'Marco de puerta.',sport:''},
+    {name:'Leg press',series:3,reps:'10',rpe:7,tags:['Cuádriceps','Glúteo'],tech:'Cabeza apoyada, exhala al empujar. Pies a anchura de hombros.',sport:'Progresión: +5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'RDL mancuernas',series:3,reps:'10',rpe:7,tags:['Isquios','Glúteo'],tech:'Calibración — empieza 16-20 kg c/mano. Espalda recta, bisagra de cadera, baja hasta sentir estiramiento en isquios.',sport:'Progresión: +5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Extensión pierna',series:3,reps:'10',rpe:7,tags:['Cuádriceps'],tech:'Controlado en la bajada. Ajusta el eje a la rodilla.',sport:'Accesorios: añade reps antes de subir peso.'},
+    {name:'Curl sentado',series:3,reps:'10',rpe:7,tags:['Isquios'],tech:'Sin inercia. Control total en ambas fases.',sport:'Accesorios: añade reps antes de subir peso.'},
+    {name:'Aductor máquina',series:3,reps:'12',rpe:7,tags:['Aductor'],tech:'Rango completo sin rebotar. Cierra lento, abre controlado.',sport:''},
+    {name:'Gemelo caballito',series:3,reps:'12',rpe:7,tags:['Gemelo'],tech:'Rango completo: baja hasta estiramiento, sube apretando el gemelo.',sport:''},
+    {name:'Abdominales máquina',series:3,reps:'12',rpe:7,tags:['Core'],tech:'Calibración. Flexiona la columna, no solo bajes los codos.',sport:''}
+  ]},
+  {id:'movilidad',type:'Movilidad',name:'Movilidad y Control Motor',focus:'Cadera · Torácica · Core · Propiocepción',exercises:[
+    {name:'Círculos de tobillo',series:1,reps:'10 c/dir',rpe:null,tags:['Articular','Tobillo'],tech:'Sentado, pie en el aire. Círculo completo en ambas direcciones.',sport:''},
+    {name:'Círculos de rodilla',series:1,reps:'10 c/dir',rpe:null,tags:['Articular','Rodilla'],tech:'De pie, manos en rodillas.',sport:''},
+    {name:'Círculos de cadera',series:1,reps:'10 c/dir',rpe:null,tags:['Articular','Cadera'],tech:'De pie, manos en caderas.',sport:''},
+    {name:'Círculos de hombro',series:1,reps:'10 c/dir',rpe:null,tags:['Articular','Hombro'],tech:'Brazos extendidos, círculo máximo.',sport:''},
+    {name:'Chin tucks',series:2,reps:'10',rpe:null,tags:['Cervical'],tech:'Barbilla dentro, cabeza atrás horizontal. Suave.',sport:''},
+    {name:'Hip 90/90',series:2,reps:'45s c/lado',rpe:null,tags:['Cadera'],tech:'Espalda recta, sin forzar. Ambas piernas en 90°.',sport:''},
+    {name:'Pigeon pose',series:2,reps:'45s c/lado',rpe:null,tags:['Cadera','Glúteo'],tech:'Baja el pecho progresivamente hacia el suelo.',sport:''},
+    {name:'Hip flexor stretch',series:2,reps:'40s c/lado',rpe:null,tags:['Cadera','Flexor'],tech:'Caderas adelante, espalda recta. Rodilla trasera en el suelo.',sport:''},
+    {name:'Deep squat hold',series:2,reps:'30s',rpe:null,tags:['Cadera','Tobillo'],tech:'Agárrate a un poste si no llegas con los talones al suelo.',sport:''},
+    {name:'Rotación torácica sentado',series:2,reps:'10 c/lado',rpe:null,tags:['Torácica'],tech:'Solo tronco, cuello relajado. Manos detrás de la cabeza.',sport:''},
+    {name:'Apertura de pecho',series:2,reps:'30s c/lado',rpe:null,tags:['Torácica','Pecho'],tech:'Marco de puerta, brazos en L. Abre el pecho sin forzar el cuello.',sport:''},
+    {name:'Shoulder CARs',series:2,reps:'5 c/dir',rpe:null,tags:['Hombro'],tech:'Círculo articular máximo, lento y controlado. Sin compensar con el tronco.',sport:''},
+    {name:'Chin tuck con extensión',series:3,reps:'10',rpe:null,tags:['Cervical'],tech:'Barbilla dentro, luego lleva la cabeza atrás horizontal. Sin dolor.',sport:''},
+    {name:'Hipopresivo básico',series:3,reps:'5',rpe:null,tags:['Core'],tech:'Vacía los pulmones completamente, abre las costillas, mantén 8-10 s. Respiración suspendida.',sport:''},
+    {name:'Dead bug',series:3,reps:'8 c/lado',rpe:null,tags:['Core'],tech:'Espalda pegada al suelo en todo momento. Extiende brazo y pierna contraria lentamente.',sport:''},
+    {name:'Equilibrio monopodal estático',series:2,reps:'30s c/pierna',rpe:null,tags:['Propiocepción'],tech:'Progresión: empieza con ojos abiertos, luego ojos cerrados.',sport:''},
+    {name:'Equilibrio con movimiento de brazos',series:2,reps:'30s c/pierna',rpe:null,tags:['Propiocepción'],tech:'Mueve los brazos en distintas direcciones mientras mantienes el equilibrio.',sport:''},
+    {name:'Sentadilla una pierna asistida',series:2,reps:'8 c/pierna',rpe:null,tags:['Propiocepción','Pierna'],tech:'Apoya una mano en la pared. Baja lento y controlado.',sport:''},
+    {name:'Respiración diafragmática',series:1,reps:'10 resp',rpe:null,tags:['Respiración'],tech:'4s inhala por la nariz, 6s exhala por la boca. Cierre de sesión.',sport:''}
+  ]},
+  {id:'upperB',type:'Upper B',name:'Tren superior — Vertical',focus:'Espalda vertical · Hombro · Pecho · Bíceps',exercises:[
+    {name:'Bicicleta o caminata',series:1,reps:'5 min',rpe:null,tags:['Calentamiento'],tech:'Ritmo suave.',sport:''},
+    {name:'Chin tucks',series:1,reps:'10',rpe:null,tags:['Calentamiento','Cervical'],tech:'Movilidad cervical.',sport:''},
+    {name:'Rotación torácica',series:1,reps:'10 c/lado',rpe:null,tags:['Calentamiento'],tech:'Solo tronco, cuello relajado.',sport:''},
+    {name:'Apertura de pecho',series:1,reps:'30s c/lado',rpe:null,tags:['Calentamiento'],tech:'Marco de puerta.',sport:''},
+    {name:'Jalón al pecho',series:3,reps:'8',rpe:7,tags:['Espalda'],tech:'Tira con los codos hacia las caderas, no con el cuello. SEÑAL DE PARADA: para si hay dolor real en el cuello, mareo o náuseas.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Press hombro máquina',series:3,reps:'10',rpe:7,tags:['Hombro'],tech:'Sin elevar los trapecios. Asiento erguido, espalda apoyada. SEÑAL DE PARADA: para si hay dolor real en el cuello.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Remo máquina',series:3,reps:'10',rpe:7,tags:['Espalda'],tech:'Unilateral, agarre neutro. Tira con el codo.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Press inclinado neutro',series:3,reps:'8',rpe:7,tags:['Pecho'],tech:'Agarre neutro, exhala al empujar.',sport:'Progresión: +2,5 kg cuando cierres todas las series a RPE 7 limpio 2 sesiones seguidas.'},
+    {name:'Elevación lateral',series:3,reps:'10',rpe:7,tags:['Hombro'],tech:'Peso fijo, no subas entre series.',sport:'Accesorios: añade reps antes de subir peso.'},
+    {name:'Bíceps máquina',series:3,reps:'10',rpe:7,tags:['Bíceps'],tech:'Sin balanceo. Rango completo: extiende abajo, flexiona hasta el máximo.',sport:'Accesorios: añade reps antes de subir peso.'}
   ]},
   {id:'descanso',type:'Descanso',name:'Descanso',focus:'',rest:true,restTitle:'Descanso activo',restSub:'Recuperación activa o descanso total según cómo te encuentres.',exercises:[]}
 ];
-const DEFAULT_SCHEDULE = ['upper','lower','descanso','upper','lower','descanso','descanso'];
+const DEFAULT_SCHEDULE = ['upperA','lower','movilidad','upperB','lower','descanso','descanso'];
 const WEEKDAY_LABELS  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 const WEEKDAY_NAMES   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const LS_KEY = 'gymtracker_v1';
