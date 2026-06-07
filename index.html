@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gym Tracker">
+<meta name="theme-color" content="#1D9E75">
+<link rel="manifest" href="manifest.json">
+<title>Gym Tracker · Alex</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1D9E75;--green-l:#5DCAA5;--green-d:#0f6b4f;
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1c1c1e;--bg4:#242428;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --text:#f0f0f0;--text2:#aaa;--text3:#666;
+  --red:#E24B4A;--blue:#4A90E2;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1D9E75,#5DCAA5,#1D9E75);background-size:200% 100%;animation:shimmer 4s linear infinite;z-index:200}
+@keyframes shimmer{0%{background-position:0% 0}100%{background-position:200% 0}}
+.app{max-width:480px;margin:0 auto;padding:0 0 6rem}
+.header{padding:1.2rem 1rem .9rem;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(29,158,117,.12) 0%,transparent 65%);pointer-events:none}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.header-name-wrap{display:flex;align-items:center;gap:5px;cursor:pointer;margin-bottom:4px}
+.header-name{font-size:11px;font-weight:700;color:var(--green-l);text-transform:uppercase;letter-spacing:.1em}
+.edit-icon{width:11px;height:11px;opacity:.5}
+.header-title{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.header-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.today-pill{font-size:10px;font-weight:700;background:linear-gradient(135deg,rgba(29,158,117,.25),rgba(93,202,165,.15));color:var(--green-l);padding:4px 12px;border-radius:99px;border:1px solid rgba(93,202,165,.35);white-space:nowrap}
+.save-indicator{font-size:10px;font-weight:700;color:var(--green-l);opacity:0;transition:opacity .4s;display:flex;align-items:center;gap:4px}
+.save-indicator.show{opacity:1}
+.io-btns{display:flex;gap:5px}
+.io-btn{font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.io-btn.export{color:var(--green-l);border-color:rgba(93,202,165,.35);background:rgba(93,202,165,.08)}
+.io-btn.export:hover{background:rgba(93,202,165,.18)}
+.io-btn.import{color:var(--text3);border-color:var(--border2);background:var(--bg4)}
+.io-btn.import:hover{color:var(--text2)}
+.io-btn.danger{color:var(--red);border-color:rgba(226,75,74,.3);background:rgba(226,75,74,.06)}
+.io-btn.danger:hover{background:rgba(226,75,74,.14)}
+.week-nav{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--bg2);border-bottom:1px solid var(--border)}
+.week-btn{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:12px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.week-btn:hover{color:var(--text);border-color:var(--green);background:rgba(29,158,117,.1)}
+.week-label{font-size:12px;color:var(--text2);font-weight:600;text-align:center}
+.day-scroll{display:flex;gap:6px;padding:.75rem 1rem;overflow-x:auto;scrollbar-width:none;background:var(--bg2);border-bottom:1px solid var(--border)}
+.day-scroll::-webkit-scrollbar{display:none}
+.day-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;transition:all .2s;min-width:52px}
+.day-chip .chip-weekday{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;opacity:.6}
+.day-chip .chip-label{font-size:12px;font-weight:700}
+.day-chip .chip-dot{width:5px;height:5px;border-radius:50%;background:transparent;transition:all .2s}
+.day-chip.active{background:linear-gradient(135deg,#1D9E75,#14795a);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(29,158,117,.35)}
+.day-chip.active .chip-dot{background:rgba(255,255,255,.5)}
+.day-chip.today-chip .chip-dot{background:var(--green-l)}
+.day-chip:not(.active):hover{background:var(--bg4);color:var(--text2);border-color:var(--border2)}
+.session-header{padding:.9rem 1rem .5rem;position:relative;overflow:hidden}
+.session-header::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--green),transparent)}
+.session-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.session-type{font-size:10px;font-weight:700;color:var(--green-l);text-transform:uppercase;letter-spacing:.1em}
+.change-session-btn{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;border:1px solid var(--border2);background:var(--bg4);color:var(--text3);cursor:pointer;font-family:inherit;transition:all .15s}
+.change-session-btn:hover{color:var(--text2)}
+.session-name{font-size:19px;font-weight:700;margin-bottom:8px;letter-spacing:-.2px}
+.session-stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat-pill{font-size:11px;color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:99px;border:1px solid var(--border)}
+.ex-list{padding:0 .75rem;display:flex;flex-direction:column;gap:8px}
+.ex-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.ex-card:hover{border-color:var(--border2)}
+.ex-card.open{border-color:rgba(93,202,165,.45);box-shadow:0 0 0 1px rgba(93,202,165,.1),0 8px 30px rgba(0,0,0,.4)}
+.ex-card.dragging{opacity:.4;transform:scale(.98)}
+.ex-card.drag-over{border-color:var(--green)!important;background:rgba(29,158,117,.06)!important}
+.ex-card-header{padding:13px 14px;cursor:pointer;display:flex;align-items:flex-start;gap:8px}
+.drag-handle{display:flex;align-items:center;padding:2px 2px 0;cursor:grab;flex-shrink:0;opacity:.25;transition:opacity .15s;touch-action:none}
+.drag-handle svg{width:14px;height:14px}
+.ex-header-left{flex:1;min-width:0}
+.ex-card-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:6px}
+.ex-name{font-size:14px;font-weight:600;line-height:1.3;flex:1}
+.rpe-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;border:1px solid}
+.rpe-badge.strength{color:var(--green-l);background:rgba(93,202,165,.12);border-color:rgba(93,202,165,.25)}
+.rpe-badge.mob{color:var(--text3);border-color:var(--border);background:var(--bg4)}
+.ex-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ex-detail{font-size:12px;color:var(--text3)}
+.ex-dot{width:3px;height:3px;border-radius:50%;background:#333;flex-shrink:0}
+.tag{font-size:10px;color:var(--text3);background:var(--bg4);padding:2px 7px;border-radius:99px;border:1px solid var(--border)}
+.ex-prev{font-size:11px;color:var(--green-l);margin-top:5px}
+.ex-prev::before{content:'↑ ';opacity:.7}
+.ex-card-actions{display:flex;gap:4px;flex-shrink:0;align-items:flex-start;margin-top:1px}
+.icon-btn{background:transparent;border:none;cursor:pointer;padding:5px;border-radius:8px;opacity:.3;transition:all .15s;display:flex;align-items:center}
+.icon-btn:hover{opacity:1;background:var(--bg4)}
+.icon-btn.del:hover{background:rgba(226,75,74,.12);opacity:1}
+.icon-btn.del:hover svg{stroke:var(--red)}
+.icon-btn svg{width:14px;height:14px}
+.ex-expand{border-top:1px solid var(--border);padding:14px;background:var(--bg2);display:none}
+.ex-card.open .ex-expand{display:block}
+.sets-header{display:grid;grid-template-columns:24px 1fr 1fr 56px 26px;gap:6px;margin-bottom:8px}
+.sets-col-label{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:.05em;text-align:center;font-weight:600}
+.set-row{display:grid;grid-template-columns:24px 1fr 1fr 56px 26px;gap:6px;align-items:center;margin-bottom:6px}
+.set-num{font-size:11px;font-weight:700;color:var(--green-l);text-align:center}
+.set-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 4px;color:var(--text);font-size:14px;font-family:inherit;text-align:center;outline:none;transition:border-color .15s}
+.set-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1)}
+.set-prev{font-size:10px;color:#444;text-align:center;line-height:1.3}
+.del-set-btn{background:transparent;border:none;cursor:pointer;color:#444;font-size:18px;line-height:1;padding:0;transition:color .15s}
+.del-set-btn:hover{color:var(--red)}
+.add-set-btn{width:100%;margin-top:6px;padding:8px;background:transparent;color:var(--green-l);border:1px dashed rgba(93,202,165,.3);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.add-set-btn:hover{background:rgba(93,202,165,.07);border-color:rgba(93,202,165,.55)}
+.notes-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:12px 0 5px;font-weight:700}
+.notes-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;outline:none;resize:none;line-height:1.55;transition:border-color .15s}
+.notes-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1)}
+.save-btn{width:100%;margin-top:10px;padding:11px;background:linear-gradient(135deg,var(--green),var(--green-d));color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 14px rgba(29,158,117,.25)}
+.save-btn:hover{transform:translateY(-1px)}
+.save-btn.saved{background:linear-gradient(135deg,#085041,#063d30);box-shadow:none;cursor:default;transform:none}
+.chart-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.chart-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;font-weight:700}
+.chart-wrap{position:relative;height:130px;width:100%}
+.tech-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.tech-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.tech-text{font-size:12px;color:var(--text2);line-height:1.65}
+.sport-box{background:rgba(29,158,117,.07);border-radius:10px;padding:10px 12px;margin-top:10px;border:1px solid rgba(93,202,165,.15)}
+.sport-label{font-size:9px;font-weight:700;color:var(--green-l);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.sport-text{font-size:12px;color:rgba(93,202,165,.8);line-height:1.55}
+.add-ex-btn{width:calc(100% - 1.5rem);margin:.5rem .75rem 0;padding:12px;background:transparent;color:var(--green-l);border:1px dashed rgba(93,202,165,.3);border-radius:14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.add-ex-btn:hover{background:rgba(93,202,165,.07);border-color:rgba(93,202,165,.55)}
+.rest-view{padding:2.5rem 1rem;text-align:center}
+.rest-icon{font-size:3rem;margin-bottom:12px}
+.rest-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.rest-sub{font-size:13px;color:var(--text3);line-height:1.55}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:500;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.green{border-color:rgba(93,202,165,.4);color:var(--green-l)}
+.toast.red{border-color:rgba(226,75,74,.4);color:var(--red)}
+.toast.blue{border-color:rgba(74,144,226,.4);color:var(--blue)}
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;align-items:flex-end;justify-content:center;padding:1rem}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--bg3);border:1px solid var(--border2);border-radius:18px;padding:20px;width:100%;max-width:420px}
+.confirm-box p{font-size:14px;color:var(--text2);margin-bottom:14px;text-align:center;line-height:1.5}
+.confirm-actions{display:flex;gap:8px}
+.confirm-btn{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.confirm-btn.danger{background:var(--red);color:#fff}
+.confirm-btn.cancel{background:var(--bg4);color:var(--text2);border:1px solid var(--border2)}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-backdrop.open{display:flex}
+.modal-box{background:var(--bg3);border:1px solid var(--border2);border-radius:20px 20px 0 0;padding:22px 20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 18px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.modal-field{margin-bottom:12px}
+.modal-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:700}
+.modal-input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.modal-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1)}
+.modal-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.modal-actions{display:flex;gap:8px;margin-top:18px}
+.modal-btn{flex:1;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.modal-btn.primary{background:linear-gradient(135deg,var(--green),var(--green-d));color:#fff}
+.modal-btn.primary:hover{transform:translateY(-1px)}
+.modal-btn.secondary{background:var(--bg4);color:var(--text2);border:1px solid var(--border2)}
+.session-picker-list{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.session-pick-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s}
+.session-pick-item:hover{border-color:var(--green-l);background:rgba(93,202,165,.06)}
+.session-pick-item.current{border-color:rgba(93,202,165,.5);background:rgba(93,202,165,.08)}
+.spi-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.session-pick-item.current .spi-check{border-color:var(--green-l);background:var(--green-l)}
+.spi-check-dot{width:8px;height:8px;border-radius:50%;background:#fff;display:none}
+.session-pick-item.current .spi-check-dot{display:block}
+.spi-type{font-size:10px;color:var(--green-l);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.spi-name{font-size:14px;font-weight:600;color:var(--text)}
+.spi-focus{font-size:11px;color:var(--text3);margin-top:2px}
+.session-pick-item.rest-pick .spi-type{color:var(--text3)}
+.session-pick-item.rest-pick .spi-name{color:var(--text2)}
+.scope-tab{padding:6px 14px;border-radius:99px;border:1px solid var(--border2);background:var(--bg4);color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.scope-tab.active{background:var(--green);border-color:transparent;color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-left">
+        <div class="header-name-wrap" id="name-wrap">
+          <div class="header-name" id="header-name">Alex · Bloque 1</div>
+          <svg class="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="header-title">Programa semanal</div>
+        <div class="header-sub">Upper / Lower · máquinas y poleas</div>
+      </div>
+      <div class="header-right">
+        <span class="today-pill" id="today-pill"></span>
+        <div class="save-indicator" id="save-indicator">✓ Guardado</div>
+        <div class="io-btns">
+          <button class="io-btn export" id="open-export">↑ Exportar</button>
+          <button class="io-btn import" id="open-import">↓ Importar</button>
+          <button class="io-btn danger" id="open-reset">Resetear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="week-nav">
+    <button class="week-btn" id="prev-week">← Ant</button>
+    <div class="week-label" id="week-label"></div>
+    <button class="week-btn" id="next-week">Sig →</button>
+  </div>
+  <div class="day-scroll" id="day-scroll"></div>
+  <div class="session-header" id="session-header">
+    <div class="session-top-row">
+      <div class="session-type" id="sess-type"></div>
+      <button class="change-session-btn" id="change-session-btn">✏️ Cambiar sesión</button>
+    </div>
+    <div class="session-name" id="sess-name"></div>
+    <div class="session-stats" id="sess-stats"></div>
+  </div>
+  <div class="ex-list" id="ex-list"></div>
+  <div class="rest-view" id="rest-view" style="display:none">
+    <div class="rest-icon">🛋️</div>
+    <div class="rest-title" id="rest-title"></div>
+    <div class="rest-sub" id="rest-sub"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <p id="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button class="confirm-btn cancel" id="confirm-cancel">Cancelar</button>
+      <button class="confirm-btn danger" id="confirm-ok">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Name modal -->
+<div class="modal-backdrop" id="name-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Editar perfil</div>
+    <div class="modal-field" style="margin-top:12px">
+      <div class="modal-label">Nombre y bloque</div>
+      <input class="modal-input" id="name-input" type="text" placeholder="Alex · Bloque 1">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="name-cancel">Cancelar</button>
+      <button class="modal-btn primary" id="name-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Exercise modal -->
+<div class="modal-backdrop" id="ex-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ex-modal-title">Nuevo ejercicio</div>
+    <div class="modal-field" style="margin-top:12px">
+      <div class="modal-label">Nombre</div>
+      <input class="modal-input" id="ex-name-input" type="text" placeholder="Ej: Press banca máquina">
+    </div>
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Reps</div><input class="modal-input" id="ex-reps-input" type="text" placeholder="10"></div>
+      <div class="modal-field"><div class="modal-label">RPE</div><input class="modal-input" id="ex-rpe-input" type="number" min="1" max="10" placeholder="7"></div>
+      <div class="modal-field"><div class="modal-label">Series</div><input class="modal-input" id="ex-sets-input" type="number" min="1" max="10" placeholder="3"></div>
+    </div>
+    <div class="modal-field"><div class="modal-label">Músculos (separados por coma)</div><input class="modal-input" id="ex-tags-input" type="text" placeholder="Pecho, Tríceps"></div>
+    <div class="modal-field"><div class="modal-label">Técnica</div><textarea class="modal-input" id="ex-tech-input" rows="3" style="resize:none;line-height:1.55"></textarea></div>
+    <div class="modal-field"><div class="modal-label">Transferencia deportiva</div><textarea class="modal-input" id="ex-sport-input" rows="2" style="resize:none;line-height:1.55"></textarea></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="ex-cancel">Cancelar</button>
+      <button class="modal-btn primary" id="ex-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div class="modal-backdrop" id="export-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">↑ Exportar / Hacer copia</div>
+    <div class="modal-sub">Copia este JSON para hacer una copia de seguridad o compartir con Claude para analizar tu progreso.</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="scope-tab active" data-scope="text-day">Texto hoy</button>
+      <button class="scope-tab" data-scope="text-week">Texto semana</button>
+      <button class="scope-tab" data-scope="text-all">Texto todo</button>
+      <button class="scope-tab" data-scope="backup">Copia de seguridad (JSON)</button>
+    </div>
+    <div class="modal-field"><textarea class="modal-input" id="export-text" rows="16" readonly style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px;line-height:1.6;resize:none"></textarea></div>
+    <button class="modal-btn primary" id="copy-export" style="width:100%;margin-bottom:8px">📋 Copiar al portapapeles</button>
+    <div class="modal-actions"><button class="modal-btn secondary" id="export-close">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- Import modal -->
+<div class="modal-backdrop" id="import-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">↓ Restaurar copia de seguridad</div>
+    <div class="modal-sub">Pega aquí el JSON exportado desde "Copia de seguridad" para restaurar todos tus datos.</div>
+    <div class="modal-field"><textarea class="modal-input" id="import-text" rows="14" placeholder='{"userName":"...","sessions":[...],"schedule":[...],"allData":{...}}' style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px;line-height:1.6;resize:none"></textarea></div>
+    <div id="import-status" style="display:none;margin-top:8px;padding:10px;border-radius:10px;font-size:12px;line-height:1.6"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="import-cancel">Cancelar</button>
+      <button class="modal-btn primary" id="import-do" style="background:linear-gradient(135deg,#4A90E2,#2a6db5)">Restaurar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session modal -->
+<div class="modal-backdrop" id="session-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Cambiar sesión</div>
+    <div class="modal-sub" id="session-modal-sub"></div>
+    <div class="session-picker-list" id="session-picker-list"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="session-modal-cancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── Default sessions ──────────────────────────────────────
+const DEFAULT_SESSIONS = [
+  {id:'upper',type:'Upper',name:'Tren superior',focus:'Pecho · hombro · espalda · brazos',exercises:[
+    {name:'Press inclinado (máquina)',series:4,reps:'10',rpe:7,tags:['Pecho'],tech:'Ajusta el asiento para que los agarres queden por encima del pecho. Empuja controlando la subida y baja lentamente.',sport:'Fuerza de empuje. Estabilidad de hombro.'},
+    {name:'Press tumbado (máquina)',series:4,reps:'10',rpe:7,tags:['Pecho'],tech:'Agarre a la anchura de hombros. Pecho arriba. Baja hasta sentir estiramiento.',sport:'Empuje horizontal. Potencia de brazo.'},
+    {name:'Press hombro (máquina)',series:3,reps:'10',rpe:7,tags:['Hombro'],tech:'Asiento erguido, espalda apoyada. Empuja verticalmente sin arquear la zona lumbar.',sport:'Fuerza de empuje vertical.'},
+    {name:'Jalón al pecho (polea)',series:4,reps:'10',rpe:7,tags:['Espalda'],tech:'Agarre prono. Pecho arriba, lleva los codos hacia las caderas.',sport:'Fuerza de tracción. Equilibrio muscular.'},
+    {name:'Elevación lateral (polea)',series:3,reps:'12',rpe:7,tags:['Hombro'],tech:'Un brazo cada vez. Polea baja. Sube hasta la altura del hombro sin impulso.',sport:'Deltoides lateral. Estabilidad del hombro.'},
+    {name:'Tríceps (máquina)',series:3,reps:'12',rpe:7,tags:['Tríceps'],tech:'Codos fijos. Extiende completamente y aprieta en la contracción máxima.',sport:'Fuerza auxiliar de brazo.'},
+    {name:'Bíceps (máquina)',series:3,reps:'12',rpe:7,tags:['Bíceps'],tech:'Rango completo: extiende abajo, flexiona hasta el máximo. Sin balanceo.',sport:'Aislamiento de bíceps. Fuerza de agarre.'}
+  ]},
+  {id:'lower',type:'Lower',name:'Tren inferior',focus:'Cuádriceps · isquios · glúteo · core',exercises:[
+    {name:'Press de pierna',series:4,reps:'10',rpe:7,tags:['Cuádriceps','Glúteo'],tech:'Pies a anchura de hombros. Baja hasta 90° de rodilla. Empuja sin bloquear.',sport:'Fuerza de pierna. Base para desplazamientos.'},
+    {name:'Extensión de pierna (máquina)',series:3,reps:'12',rpe:7,tags:['Cuádriceps'],tech:'Ajusta el eje a la rodilla. Extiende completamente y baja lento.',sport:'Aislamiento de cuádriceps. Protección de rodilla.'},
+    {name:'Curl sentado (máquina)',series:3,reps:'12',rpe:7,tags:['Isquios'],tech:'Control total en ambas fases. La fase negativa es igual de importante.',sport:'Equilibrio quad/isquio. Prevención de lesiones.'},
+    {name:'Aductor (máquina)',series:3,reps:'15',rpe:6,tags:['Aductor'],tech:'Rango completo sin rebotar. Cierra lento y abre controlado.',sport:'Estabilidad de cadera. Cambios de dirección.'},
+    {name:'Gemelo caballito (máquina)',series:4,reps:'15',rpe:7,tags:['Gemelo'],tech:'Rango completo: baja hasta estiramiento, sube apretando el gemelo.',sport:'Propulsión y reactividad.'},
+    {name:'Abdominales (máquina)',series:3,reps:'15',rpe:7,tags:['Core'],tech:'Flexiona la columna, no solo bajes los codos. Controla la vuelta.',sport:'Core estabilizador.'}
+  ]},
+  {id:'descanso',type:'Descanso',name:'Descanso',focus:'',rest:true,restTitle:'Descanso activo',restSub:'Recuperación activa o descanso total según cómo te encuentres.',exercises:[]}
+];
+const DEFAULT_SCHEDULE = ['upper','lower','descanso','upper','lower','descanso','descanso'];
+const WEEKDAY_LABELS  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const WEEKDAY_NAMES   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const LS_KEY = 'gymtracker_v1';
+
+// ── State ─────────────────────────────────────────────────
+let sessions  = JSON.parse(JSON.stringify(DEFAULT_SESSIONS));
+let schedule  = [...DEFAULT_SCHEDULE];
+let userName  = 'Alex · Bloque 1';
+let allData   = {};
+let currentWdIdx  = 0;
+let currentMonday = getMonday(new Date());
+let editingExContext = null;
+const chartInstances = {};
+const liveSetState   = {};
+
+// ── localStorage persistence ──────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({userName, schedule, allData, sessions}));
+    flashSaved();
+  } catch(e) {
+    showToast('Error al guardar — almacenamiento lleno?','red');
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.userName) userName = s.userName;
+    if (s.schedule && s.schedule.length === 7) schedule = s.schedule;
+    if (s.allData) allData = s.allData;
+    if (s.sessions && Array.isArray(s.sessions) && s.sessions.length) sessions = s.sessions;
+  } catch(e) {
+    console.warn('loadState error', e);
+  }
+}
+
+let saveFlashTimer;
+function flashSaved() {
+  const el = document.getElementById('save-indicator');
+  el.classList.add('show');
+  clearTimeout(saveFlashTimer);
+  saveFlashTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function getMonday(d){const dt=new Date(d),day=dt.getDay(),diff=dt.getDate()-day+(day===0?-6:1);dt.setDate(diff);dt.setHours(0,0,0,0);return dt;}
+function weekKey(m){return m.toISOString().slice(0,10);}
+function fmtWeek(m){const e=new Date(m);e.setDate(m.getDate()+6);const o={day:'numeric',month:'short'};return m.toLocaleDateString('es-ES',o)+' – '+e.toLocaleDateString('es-ES',o);}
+const jsToWd = d => d===0?6:d-1;
+const todayWdIdx = jsToWd(new Date().getDay());
+function sessionForDay(wdIdx){return sessions.find(s=>s.id===schedule[wdIdx])||sessions[sessions.length-1];}
+function dateOfDay(monday,wdIdx){const d=new Date(monday);d.setDate(d.getDate()+wdIdx);return d;}
+function fmtDate(d){return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});}
+
+// ── Data access ───────────────────────────────────────────
+function exKey(wdIdx,exName,wk){return`${wk}|wd${wdIdx}|${exName}`;}
+function getPrev(wdIdx,exName){const p=new Date(currentMonday);p.setDate(p.getDate()-7);return allData[exKey(wdIdx,exName,weekKey(p))]||null;}
+function getCurr(wdIdx,exName){return allData[exKey(wdIdx,exName,weekKey(currentMonday))]||null;}
+function setCurr(wdIdx,exName,data){allData[exKey(wdIdx,exName,weekKey(currentMonday))]=data;}
+function getHistory(wdIdx,exName){
+  return Object.keys(allData).filter(k=>k.endsWith(`|wd${wdIdx}|${exName}`)).sort()
+    .map(k=>{const rec=allData[k],wk=k.split('|')[0];if(!rec?.sets)return null;const maxW=Math.max(...rec.sets.map(s=>parseFloat(s.kg)||0));return{week:wk,maxW};}).filter(Boolean);
+}
+
+// ── Toast ─────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  clearTimeout(toastTimer);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── Confirm ───────────────────────────────────────────────
+let confirmResolve=null;
+function confirm2(msg){return new Promise(res=>{confirmResolve=res;document.getElementById('confirm-msg').textContent=msg;document.getElementById('confirm-overlay').classList.add('open');});}
+document.getElementById('confirm-cancel').onclick=()=>{document.getElementById('confirm-overlay').classList.remove('open');confirmResolve&&confirmResolve(false);};
+document.getElementById('confirm-ok').onclick=()=>{document.getElementById('confirm-overlay').classList.remove('open');confirmResolve&&confirmResolve(true);};
+
+// ── Init ──────────────────────────────────────────────────
+function init(){
+  loadState();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  currentWdIdx = todayWdIdx;
+  document.getElementById('today-pill').textContent='Hoy: '+WEEKDAY_LABELS[todayWdIdx];
+  document.getElementById('header-name').textContent=userName;
+  document.getElementById('open-export').onclick=openExportModal;
+  document.getElementById('open-import').onclick=openImportModal;
+  document.getElementById('open-reset').onclick=async()=>{
+    if(!await confirm2('¿Borrar TODOS los datos registrados? Esta acción no se puede deshacer.'))return;
+    allData={};saveState();showDay(currentWdIdx);showToast('Datos borrados','red');
+  };
+  buildDayNav(); updateWeekLabel(); showDay(currentWdIdx);
+  setupNameModal(); setupExModal(); setupSessionModal();
+}
+
+// ── Day nav ───────────────────────────────────────────────
+function buildDayNav(){
+  const sc=document.getElementById('day-scroll');sc.innerHTML='';
+  for(let i=0;i<7;i++){
+    const sess=sessionForDay(i);
+    const btn=document.createElement('button');
+    btn.className='day-chip'+(i===currentWdIdx?' active':'')+(i===todayWdIdx?' today-chip':'');
+    btn.innerHTML=`<span class="chip-weekday">${WEEKDAY_LABELS[i]}</span><span class="chip-label">${sess.type}</span><span class="chip-dot"></span>`;
+    btn.onclick=(()=>{const idx=i;return()=>{currentWdIdx=idx;buildDayNav();showDay(idx);}})();
+    sc.appendChild(btn);
+  }
+}
+function updateWeekLabel(){
+  const now=getMonday(new Date()),diff=(currentMonday-now)/(1000*60*60*24*7);
+  document.getElementById('week-label').textContent=diff===0?'Esta semana':diff===-1?'Semana pasada':diff===1?'Próxima semana':fmtWeek(currentMonday);
+}
+document.getElementById('prev-week').onclick=()=>{currentMonday=new Date(currentMonday);currentMonday.setDate(currentMonday.getDate()-7);updateWeekLabel();showDay(currentWdIdx);};
+document.getElementById('next-week').onclick=()=>{currentMonday=new Date(currentMonday);currentMonday.setDate(currentMonday.getDate()+7);updateWeekLabel();showDay(currentWdIdx);};
+
+// ── Show day ──────────────────────────────────────────────
+function showDay(wdIdx){
+  const sess=sessionForDay(wdIdx);
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});
+  Object.keys(chartInstances).forEach(k=>delete chartInstances[k]);
+  const restV=document.getElementById('rest-view'),exList=document.getElementById('ex-list');
+  document.getElementById('sess-type').textContent=`${WEEKDAY_NAMES[wdIdx]} — ${sess.type}`;
+  if(sess.rest){
+    restV.style.display='block';exList.style.display='none';
+    document.getElementById('sess-name').textContent='';
+    document.getElementById('sess-stats').innerHTML='';
+    document.getElementById('rest-title').textContent=sess.restTitle||'Descanso';
+    document.getElementById('rest-sub').textContent=sess.restSub||'';
+  }else{
+    restV.style.display='none';exList.style.display='flex';
+    document.getElementById('sess-name').textContent=sess.name;
+    const total=sess.exercises.reduce((a,e)=>a+(e.series||0),0);
+    document.getElementById('sess-stats').innerHTML=`<span class="stat-pill">${sess.exercises.length} ejercicios</span><span class="stat-pill">${total} series</span>${sess.focus?`<span class="stat-pill">${sess.focus}</span>`:''}`;
+    exList.innerHTML='';
+    sess.exercises.forEach((ex,ei)=>exList.appendChild(buildExCard(wdIdx,sess,ex,ei)));
+    const addBtn=document.createElement('button');
+    addBtn.className='add-ex-btn';
+    addBtn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Añadir ejercicio';
+    addBtn.onclick=()=>openExModal(wdIdx,null);
+    exList.appendChild(addBtn);
+    setupDragDrop(wdIdx,sess);
+  }
+}
+
+// ── Session modal ─────────────────────────────────────────
+function setupSessionModal(){
+  document.getElementById('change-session-btn').onclick=()=>openSessionModal(currentWdIdx);
+  document.getElementById('session-modal-cancel').onclick=()=>document.getElementById('session-modal').classList.remove('open');
+  document.getElementById('session-modal').onclick=e=>{if(e.target===document.getElementById('session-modal'))document.getElementById('session-modal').classList.remove('open');};
+}
+function openSessionModal(wdIdx){
+  document.getElementById('session-modal-sub').textContent=`Selecciona la sesión para el ${WEEKDAY_NAMES[wdIdx]}`;
+  const list=document.getElementById('session-picker-list');list.innerHTML='';
+  const curId=schedule[wdIdx];
+  sessions.forEach(sess=>{
+    const item=document.createElement('div');
+    item.className='session-pick-item'+(sess.id===curId?' current':'')+(sess.rest?' rest-pick':'');
+    item.innerHTML=`<div class="spi-check"><div class="spi-check-dot"></div></div><div class="spi-info"><div class="spi-type">${sess.type}</div><div class="spi-name">${sess.name}</div>${sess.focus?`<div class="spi-focus">${sess.focus}</div>`:''}</div>`;
+    item.onclick=()=>{schedule[wdIdx]=sess.id;document.getElementById('session-modal').classList.remove('open');buildDayNav();showDay(wdIdx);saveState();showToast(`${WEEKDAY_NAMES[wdIdx]}: ${sess.type} — guardado`,'green');};
+    list.appendChild(item);
+  });
+  document.getElementById('session-modal').classList.add('open');
+}
+
+// ── Name modal ────────────────────────────────────────────
+function setupNameModal(){
+  document.getElementById('name-wrap').onclick=()=>{document.getElementById('name-input').value=userName;document.getElementById('name-modal').classList.add('open');};
+  document.getElementById('name-cancel').onclick=()=>document.getElementById('name-modal').classList.remove('open');
+  document.getElementById('name-save').onclick=()=>{
+    const v=document.getElementById('name-input').value.trim();
+    if(v){userName=v;document.getElementById('header-name').textContent=v;saveState();}
+    document.getElementById('name-modal').classList.remove('open');
+  };
+  document.getElementById('name-modal').onclick=e=>{if(e.target===document.getElementById('name-modal'))document.getElementById('name-modal').classList.remove('open');};
+}
+
+// ── Exercise modal ────────────────────────────────────────
+function setupExModal(){
+  document.getElementById('ex-cancel').onclick=()=>document.getElementById('ex-modal').classList.remove('open');
+  document.getElementById('ex-modal').onclick=e=>{if(e.target===document.getElementById('ex-modal'))document.getElementById('ex-modal').classList.remove('open');};
+  document.getElementById('ex-save').onclick=()=>{
+    const name=document.getElementById('ex-name-input').value.trim();
+    if(!name){showToast('Escribe un nombre para el ejercicio','red');return;}
+    const ex={
+      name,
+      reps:document.getElementById('ex-reps-input').value||'10',
+      rpe:parseFloat(document.getElementById('ex-rpe-input').value)||null,
+      series:parseInt(document.getElementById('ex-sets-input').value)||3,
+      tags:document.getElementById('ex-tags-input').value.split(',').map(t=>t.trim()).filter(Boolean),
+      tech:document.getElementById('ex-tech-input').value.trim(),
+      sport:document.getElementById('ex-sport-input').value.trim()
+    };
+    const {wdIdx,ei}=editingExContext||{};
+    const sess=sessionForDay(wdIdx);
+    if(ei!=null){sess.exercises[ei]={...sess.exercises[ei],...ex};}
+    else{sess.exercises.push(ex);}
+    document.getElementById('ex-modal').classList.remove('open');
+    saveState();showDay(wdIdx);showToast(ei!=null?'Ejercicio actualizado':'Ejercicio añadido','green');
+  };
+}
+function openExModal(wdIdx,ei){
+  editingExContext={wdIdx,ei};
+  const isNew=ei==null;
+  document.getElementById('ex-modal-title').textContent=isNew?'Nuevo ejercicio':'Editar ejercicio';
+  if(isNew){
+    document.getElementById('ex-name-input').value='';
+    document.getElementById('ex-reps-input').value='';
+    document.getElementById('ex-rpe-input').value='';
+    document.getElementById('ex-sets-input').value='';
+    document.getElementById('ex-tags-input').value='';
+    document.getElementById('ex-tech-input').value='';
+    document.getElementById('ex-sport-input').value='';
+  }else{
+    const ex=sessionForDay(wdIdx).exercises[ei];
+    document.getElementById('ex-name-input').value=ex.name||'';
+    document.getElementById('ex-reps-input').value=ex.reps||'';
+    document.getElementById('ex-rpe-input').value=ex.rpe!=null?ex.rpe:'';
+    document.getElementById('ex-sets-input').value=ex.series||'';
+    document.getElementById('ex-tags-input').value=(ex.tags||[]).join(', ');
+    document.getElementById('ex-tech-input').value=ex.tech||'';
+    document.getElementById('ex-sport-input').value=ex.sport||'';
+  }
+  document.getElementById('ex-modal').classList.add('open');
+}
+
+// ── Exercise card ─────────────────────────────────────────
+function buildExCard(wdIdx,sess,ex,ei){
+  const card=document.createElement('div');
+  card.className='ex-card';card.dataset.ei=ei;card.draggable=true;
+  const prev=getPrev(wdIdx,ex.name);
+  const prevMaxW=prev?.sets?Math.max(...prev.sets.map(s=>parseFloat(s.kg)||0)):0;
+  const rpeHtml=ex.rpe!=null?`<span class="rpe-badge strength">RPE ${ex.rpe}</span>`:`<span class="rpe-badge mob">Sin RPE</span>`;
+  card.innerHTML=`
+    <div class="ex-card-header">
+      <div class="drag-handle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg></div>
+      <div class="ex-header-left">
+        <div class="ex-card-top"><div class="ex-name">${ex.name}</div>${rpeHtml}</div>
+        <div class="ex-meta"><span class="ex-detail">${ex.series} series</span><span class="ex-dot"></span><span class="ex-detail">${ex.reps} reps</span><span class="ex-dot"></span>${(ex.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        ${prevMaxW>0?`<div class="ex-prev">Semana pasada: ${prevMaxW} kg</div>`:''}
+      </div>
+      <div class="ex-card-actions">
+        <button class="icon-btn edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="icon-btn del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+      </div>
+    </div>
+    <div class="ex-expand">
+      <div id="sets-${wdIdx}-${ei}"></div>
+      <button class="add-set-btn" id="addset-${wdIdx}-${ei}">+ Añadir serie</button>
+      <div class="notes-label">Notas de sesión</div>
+      <textarea class="notes-input" id="notes-${wdIdx}-${ei}" rows="2" placeholder="Sensaciones, técnica, ajustes..."></textarea>
+      <button class="save-btn" id="savebtn-${wdIdx}-${ei}">💾 Guardar serie</button>
+      <div class="chart-section"><div class="chart-title">Progresión de peso máximo</div><div class="chart-wrap"><canvas id="chart-${wdIdx}-${ei}"></canvas></div></div>
+      <div class="tech-section">
+        <div class="tech-label">Técnica</div><div class="tech-text">${ex.tech||''}</div>
+        <div class="sport-box"><div class="sport-label">Transferencia deportiva</div><div class="sport-text">${ex.sport||''}</div></div>
+      </div>
+    </div>`;
+  card.querySelector('.ex-card-header').onclick=e=>{
+    if(e.target.closest('.ex-card-actions')||e.target.closest('.drag-handle'))return;
+    const wasOpen=card.classList.contains('open');
+    document.querySelectorAll('.ex-card.open').forEach(c=>c.classList.remove('open'));
+    if(!wasOpen){card.classList.add('open');initSets(wdIdx,ex,ei);renderChart(wdIdx,ex,ei);}
+  };
+  card.querySelector('.edit-btn').onclick=e=>{e.stopPropagation();openExModal(wdIdx,ei);};
+  card.querySelector('.icon-btn.del').onclick=async e=>{
+    e.stopPropagation();
+    if(!await confirm2(`¿Eliminar "${ex.name}"?`))return;
+    sess.exercises.splice(ei,1);
+    saveState();showDay(wdIdx);
+    showToast('Eliminado','red');
+  };
+  card.querySelector(`#addset-${wdIdx}-${ei}`).onclick=()=>addSet(wdIdx,ex,ei);
+  card.querySelector(`#savebtn-${wdIdx}-${ei}`).onclick=()=>saveSets(wdIdx,ex,ei);
+  return card;
+}
+
+// ── Drag & drop ───────────────────────────────────────────
+let dragSrc=null;
+function setupDragDrop(wdIdx,sess){
+  document.getElementById('ex-list').querySelectorAll('.ex-card[draggable]').forEach(card=>{
+    card.addEventListener('dragstart',e=>{dragSrc=card;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    card.addEventListener('dragend',()=>{card.classList.remove('dragging');document.querySelectorAll('.ex-card').forEach(c=>c.classList.remove('drag-over'));});
+    card.addEventListener('dragover',e=>{e.preventDefault();if(card!==dragSrc)card.classList.add('drag-over');});
+    card.addEventListener('dragleave',()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop',e=>{
+      e.preventDefault();if(!dragSrc||dragSrc===card)return;
+      const[mv]=sess.exercises.splice(parseInt(dragSrc.dataset.ei),1);
+      sess.exercises.splice(parseInt(card.dataset.ei),0,mv);
+      saveState();showDay(wdIdx);showToast('Orden actualizado','green');
+    });
+  });
+}
+
+// ── Sets ──────────────────────────────────────────────────
+function sK(wdIdx,ei){return`${wdIdx}-${ei}`;}
+function initSets(wdIdx,ex,ei){
+  const curr=getCurr(wdIdx,ex.name),k=sK(wdIdx,ei);
+  liveSetState[k]=curr?.sets?curr.sets.map(s=>({kg:s.kg,reps:s.reps})):Array.from({length:ex.series},()=>({kg:'',reps:''}));
+  const nta=document.getElementById(`notes-${wdIdx}-${ei}`);
+  if(nta&&curr?.notes)nta.value=curr.notes;
+  renderSets(wdIdx,ex,ei);
+}
+function renderSets(wdIdx,ex,ei){
+  const container=document.getElementById(`sets-${wdIdx}-${ei}`);if(!container)return;
+  const k=sK(wdIdx,ei),sets=liveSetState[k]||[];
+  const prev=getPrev(wdIdx,ex.name);
+  container.innerHTML='';
+  const hdr=document.createElement('div');hdr.className='sets-header';
+  hdr.innerHTML=`<div></div><div class="sets-col-label">Kg</div><div class="sets-col-label">Reps</div><div class="sets-col-label">Ant.</div><div></div>`;
+  container.appendChild(hdr);
+  sets.forEach((s,si)=>{
+    const pKg=prev?.sets?.[si]?.kg||'',pReps=prev?.sets?.[si]?.reps||'';
+    const row=document.createElement('div');row.className='set-row';
+    row.innerHTML=`<div class="set-num">${si+1}</div><input class="set-input" type="number" step="0.5" min="0" placeholder="—" value="${s.kg}"><input class="set-input" type="number" min="0" placeholder="—" value="${s.reps}"><div class="set-prev">${pKg?`${pKg}×${pReps}`:'—'}</div><button class="del-set-btn">×</button>`;
+    row.querySelector('.del-set-btn').onclick=()=>{liveSetState[k].splice(si,1);renderSets(wdIdx,ex,ei);};
+    const[kgI,rpsI]=row.querySelectorAll('.set-input');
+    kgI.oninput=()=>{liveSetState[k][si].kg=kgI.value;};
+    rpsI.oninput=()=>{liveSetState[k][si].reps=rpsI.value;};
+    container.appendChild(row);
+  });
+}
+function addSet(wdIdx,ex,ei){const k=sK(wdIdx,ei);if(!liveSetState[k])liveSetState[k]=[];liveSetState[k].push({kg:'',reps:''});renderSets(wdIdx,ex,ei);}
+function saveSets(wdIdx,ex,ei){
+  const k=sK(wdIdx,ei);
+  const notesEl=document.getElementById(`notes-${wdIdx}-${ei}`);
+  setCurr(wdIdx,ex.name,{sets:liveSetState[k]||[],notes:notesEl?.value||''});
+  saveState();
+  const btn=document.getElementById(`savebtn-${wdIdx}-${ei}`);
+  btn.textContent='✓ Guardado';btn.classList.add('saved');
+  setTimeout(()=>{btn.textContent='💾 Guardar serie';btn.classList.remove('saved');},2000);
+  renderChart(wdIdx,ex,ei);
+}
+
+// ── Chart ─────────────────────────────────────────────────
+function renderChart(wdIdx,ex,ei){
+  const cid=`chart-${wdIdx}-${ei}`,canvas=document.getElementById(cid);if(!canvas)return;
+  if(chartInstances[cid]){try{chartInstances[cid].destroy();}catch(e){}}
+  const history=getHistory(wdIdx,ex.name);
+  if(!history.length){canvas.parentElement.innerHTML='<div style="text-align:center;color:#333;font-size:12px;padding:28px 0">Registra tu primera sesión para ver la progresión</div>';return;}
+  const labels=history.map(h=>{const d=new Date(h.week+'T00:00:00');return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});});
+  chartInstances[cid]=new Chart(canvas,{type:'line',data:{labels,datasets:[{label:'Kg máx',data:history.map(h=>h.maxW),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.1)',pointBackgroundColor:'#5DCAA5',pointRadius:4,fill:true,tension:0.35,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y} kg`}}},scales:{x:{ticks:{color:'#444',font:{size:10}},grid:{color:'rgba(255,255,255,.03)'},border:{color:'rgba(255,255,255,.06)'}},y:{ticks:{color:'#444',font:{size:10},callback:v=>`${v} kg`},grid:{color:'rgba(255,255,255,.03)'},border:{color:'rgba(255,255,255,.06)'}}}}});
+}
+
+// ── Export ────────────────────────────────────────────────
+function pad(s,len){s=String(s);return s.length>=len?s:s+' '.repeat(len-s.length);}
+function parseDate(s){const[dd,mm,yyyy]=s.split('/');return new Date(`${yyyy}-${mm}-${dd}T00:00:00`);}
+
+function buildTextExport(scope){
+  let targets=[];
+  if(scope==='text-day'){targets=[{monday:currentMonday,wdIdx:currentWdIdx}];}
+  else if(scope==='text-week'){for(let i=0;i<7;i++)targets.push({monday:currentMonday,wdIdx:i});}
+  else{
+    const seen=new Set();
+    Object.keys(allData).forEach(k=>{const[wk,wd]=k.split('|');const key=`${wk}|${wd}`;if(!seen.has(key)){seen.add(key);targets.push({monday:new Date(wk+'T00:00:00'),wdIdx:parseInt(wd.replace('wd',''))});}});
+    targets.sort((a,b)=>a.monday-b.monday||a.wdIdx-b.wdIdx);
+  }
+  const lines=[];
+  targets.forEach(({monday,wdIdx})=>{
+    const sess=sessionForDay(wdIdx);if(sess.rest)return;
+    const wk=weekKey(monday);
+    const hasData=sess.exercises.some(ex=>allData[exKey(wdIdx,ex.name,wk)]);
+    if(!hasData&&scope==='text-all')return;
+    const sessionDate=dateOfDay(monday,wdIdx);
+    lines.push(`[${fmtDate(sessionDate)}] — ${WEEKDAY_NAMES[wdIdx]} (${sess.type}: ${sess.name})`);
+    lines.push('─'.repeat(72));
+    lines.push(`${pad('Ejercicio',22)}| ${pad('Series x Reps',13)}| ${pad('Peso (kg)',12)}| ${pad('RPE',5)}| Notas`);
+    lines.push('─'.repeat(72));
+    sess.exercises.forEach(ex=>{
+      const rec=allData[exKey(wdIdx,ex.name,wk)];
+      if(!rec?.sets?.length){if(scope!=='text-all')lines.push(`${pad(ex.name,22)}| ${pad('—',13)}| ${pad('—',12)}| ${pad(ex.rpe!=null?String(ex.rpe):'—',5)}| `);return;}
+      const setsStr=`${rec.sets.length} x ${[...new Set(rec.sets.map(s=>s.reps||'?'))].join('/')}`;
+      const weights=[...new Set(rec.sets.map(s=>s.kg).filter(Boolean))];
+      lines.push(`${pad(ex.name,22)}| ${pad(setsStr,13)}| ${pad(weights.join('/'),12)}| ${pad(ex.rpe!=null?String(ex.rpe):'—',5)}| ${rec.notes||''}`);
+    });
+    lines.push('─'.repeat(72));
+    lines.push('');
+  });
+  return lines.length?lines.join('\n'):'No hay datos registrados para exportar.';
+}
+
+function buildBackupJSON(){
+  return JSON.stringify({userName,sessions,schedule,allData},null,2);
+}
+
+let exportScope='text-day';
+function openExportModal(){
+  exportScope='text-day';
+  document.querySelectorAll('#export-modal .scope-tab').forEach(t=>t.classList.toggle('active',t.dataset.scope==='text-day'));
+  document.getElementById('export-text').value=buildTextExport('text-day');
+  document.getElementById('export-modal').classList.add('open');
+}
+document.addEventListener('click',e=>{
+  const tab=e.target.closest('#export-modal .scope-tab');
+  if(tab){
+    exportScope=tab.dataset.scope;
+    document.querySelectorAll('#export-modal .scope-tab').forEach(t=>t.classList.toggle('active',t===tab));
+    document.getElementById('export-text').value=exportScope==='backup'?buildBackupJSON():buildTextExport(exportScope);
+  }
+});
+document.getElementById('export-close').onclick=()=>document.getElementById('export-modal').classList.remove('open');
+document.getElementById('export-modal').onclick=e=>{if(e.target===document.getElementById('export-modal'))document.getElementById('export-modal').classList.remove('open');};
+document.getElementById('copy-export').onclick=()=>{
+  navigator.clipboard.writeText(document.getElementById('export-text').value)
+    .then(()=>showToast('Copiado ✓','green'))
+    .catch(()=>showToast('Selecciona y copia manualmente',''));
+};
+
+// ── Import (restore backup) ───────────────────────────────
+function openImportModal(){
+  document.getElementById('import-text').value='';
+  const st=document.getElementById('import-status');st.style.display='none';
+  document.getElementById('import-modal').classList.add('open');
+}
+document.getElementById('import-cancel').onclick=()=>document.getElementById('import-modal').classList.remove('open');
+document.getElementById('import-modal').onclick=e=>{if(e.target===document.getElementById('import-modal'))document.getElementById('import-modal').classList.remove('open');};
+document.getElementById('import-do').onclick=async()=>{
+  const raw=document.getElementById('import-text').value.trim();
+  const st=document.getElementById('import-status');
+  if(!raw){st.style.display='block';st.style.background='rgba(226,75,74,.1)';st.style.border='1px solid rgba(226,75,74,.3)';st.style.color='var(--red)';st.textContent='Pega un JSON válido.';return;}
+  try{
+    const parsed=JSON.parse(raw);
+    if(!parsed.sessions||!parsed.schedule||!parsed.allData)throw new Error('Formato incorrecto');
+    if(!await confirm2('¿Restaurar copia de seguridad? Se sobreescribirán todos los datos actuales.'))return;
+    if(parsed.userName)userName=parsed.userName;
+    if(parsed.schedule&&parsed.schedule.length===7)schedule=parsed.schedule;
+    if(parsed.allData)allData=parsed.allData;
+    if(parsed.sessions&&parsed.sessions.length)sessions=parsed.sessions;
+    saveState();
+    document.getElementById('import-modal').classList.remove('open');
+    document.getElementById('header-name').textContent=userName;
+    buildDayNav();showDay(currentWdIdx);
+    showToast('Copia de seguridad restaurada ✓','green');
+  }catch(err){
+    st.style.display='block';st.style.background='rgba(226,75,74,.1)';st.style.border='1px solid rgba(226,75,74,.3)';st.style.color='var(--red)';
+    st.textContent=`Error: ${err.message}`;
+  }
+};
+
+init();
+</script>
+</body>
+</html>
